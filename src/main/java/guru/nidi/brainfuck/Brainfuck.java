@@ -42,12 +42,9 @@ public class Brainfuck {
 
     public void compile(String in, File file) throws IOException {
         final Stack<Integer> loops = new Stack<>();
-        final InputStream base = Thread.currentThread().getContextClassLoader().getResourceAsStream("base.out");
-        byte[] buf = new byte[base.available()];
-        final int read = base.read(buf);
         file.delete();
         out = new RandomAccessFile(file, "rw");
-        out.write(buf, 0, read);
+        writeBase();
         for (byte b : in.getBytes()) {
             switch (b) {
                 case '<':
@@ -97,6 +94,13 @@ public class Brainfuck {
         out.seek(LEN_POS2);
         writeInt((int) out.length());
         out.close();
+    }
+
+    private void writeBase() throws IOException {
+        final InputStream base = Thread.currentThread().getContextClassLoader().getResourceAsStream("base.out");
+        final byte[] buf = new byte[base.available()];
+        final int read = base.read(buf);
+        out.write(buf, 0, read);
     }
 
     private void writeInt(int value) throws IOException {
