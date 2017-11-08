@@ -40,6 +40,7 @@ public class Brainfuck {
             output.delete();
             throw e;
         }
+        output.setExecutable(true,false);
     }
 
     private void compile(String source) throws IOException {
