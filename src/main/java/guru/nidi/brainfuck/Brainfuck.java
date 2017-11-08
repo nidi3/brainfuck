@@ -18,34 +18,34 @@ package guru.nidi.brainfuck;
 import java.io.*;
 import java.util.Stack;
 
+import static guru.nidi.brainfuck.BaseDependent.*;
+import static guru.nidi.brainfuck.Opcodes.*;
+
 public class Brainfuck {
-    private static final int LEN_POS1 = 0x44;
-    private static final int LEN_POS2 = 0x48;
-    private static final int READ_POS = 0xc3;
-    private static final int WRITE_POS = 0xd7;
-    private static final byte[] DEC_PTR = new byte[]{0x4e}; //dec esi
-    private static final byte[] INC_PTR = new byte[]{0x46}; //inc esi
-    private static final byte[] DEC_VAL = new byte[]{(byte) 0xfe, 0x0e}; //dec byte[esi]
-    private static final byte[] INC_VAL = new byte[]{(byte) 0xfe, 0x06}; //inc byte[esi]
-    //could be optimized with short jump if possible
-    private static final byte[] JZ = new byte[]{(byte) 0x80, 0x3e, 0x00, 0x0f, (byte) 0x84}; //cmp byte[esi],0; je + 4 bytes relative
-    //could be optimized with short jump if possible
-    private static final byte[] JUMP = new byte[]{(byte) 0xe9}; //jmp + 4 bytes relative
-    private static final byte[] CALL = new byte[]{(byte) 0xe8}; //call + 4 bytes relative dest
-    private static final byte[] RET = new byte[]{(byte) 0xc3}; //ret
+    private final RandomAccessFile out;
 
-    private RandomAccessFile out;
-
-    public static void main(String[] args) throws IOException {
-        new Brainfuck().compile(args[0], new File("a.out"));
+    private Brainfuck(RandomAccessFile out) {
+        this.out = out;
     }
 
-    public void compile(String in, File file) throws IOException {
+    public static void main(String[] args) throws IOException {
+        compile(args[0], new File("a.out"));
+    }
+
+    public static void compile(String source, File output) throws IOException {
+        output.delete();
+        try (RandomAccessFile out = new RandomAccessFile(output, "rw")) {
+            new Brainfuck(out).compile(source);
+        } catch (Exception e) {
+            output.delete();
+            throw e;
+        }
+    }
+
+    private void compile(String source) throws IOException {
         final Stack<Integer> loops = new Stack<>();
-        file.delete();
-        out = new RandomAccessFile(file, "rw");
         writeBase();
-        for (byte b : in.getBytes()) {
+        for (byte b : source.getBytes()) {
             switch (b) {
                 case '<':
                     out.write(DEC_PTR);
@@ -89,11 +89,7 @@ public class Brainfuck {
             throw new IllegalStateException("Unclosed [");
         }
         out.write(RET);
-        out.seek(LEN_POS1);
-        writeInt((int) out.length());
-        out.seek(LEN_POS2);
-        writeInt((int) out.length());
-        out.close();
+        adjustLength();
     }
 
     private void writeBase() throws IOException {
@@ -101,6 +97,13 @@ public class Brainfuck {
         final byte[] buf = new byte[base.available()];
         final int read = base.read(buf);
         out.write(buf, 0, read);
+    }
+
+    private void adjustLength() throws IOException {
+        out.seek(LEN_POS1);
+        writeInt((int) out.length());
+        out.seek(LEN_POS2);
+        writeInt((int) out.length());
     }
 
     private void writeInt(int value) throws IOException {
