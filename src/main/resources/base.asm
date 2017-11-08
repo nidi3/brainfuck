@@ -1,5 +1,3 @@
-; assemble this file into base.out with "nasm -f bin -o base.out base.asm"
-
 BITS 32
     org         08048000h
     ehdr:                                               ; Elf32_Ehdr
@@ -41,6 +39,7 @@ BITS 32
     c_lflag     equ     12
 
     _start:
+            ; reserve memory
             mov eax, 192    ; mmap2
             xor ebx, ebx    ; addr
             mov ecx, 30000  ; len
@@ -51,16 +50,20 @@ BITS 32
             int 80h
             mov edi, eax    ; edi = ptr to memory
 
+            ; disable ICANON and ECHO on terminal
             call read_termios
             and dword [edi+c_lflag], ~(ICANON|ECHO)
             call write_termios
 
+            ; set esi as bf pointer, run program
             lea esi, [edi+data]
             call run
 
+            ; reset terminal ICANON and ECHO
             or dword [edi+c_lflag], ICANON|ECHO
             call write_termios
 
+            ; goodbye
             mov eax,1       ; exit
             int 80h
 
@@ -97,28 +100,5 @@ BITS 32
             ret
 
     run:
-        ;ret
-
-        ;dec esi
-        ;nop
-        ;inc esi
-        ;nop
-        ;dec byte [esi]
-        ;nop
-        ;inc byte [esi]
-        ;dec esi
-        ;comp:
-        ;cmp byte[esi],0
-        ;je near next
-        ;inc esi
-        ;jmp near comp
-        ;next:
-        ;dec esi
-
-        ;call write_char
-        ;call read_char
-        ;call write_char
-        ;call read_char
-        ;ret
 
     filesize    equ     $ - $$
