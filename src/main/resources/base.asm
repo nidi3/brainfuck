@@ -48,19 +48,28 @@ BITS 32
             mov edi, 0      ; fd
             xor ebp, ebp    ; offset
             int 80h
-            mov edi, eax    ; edi = ptr to memory
+            mov ebp, eax    ; ebp = ptr to memory
 
             ; disable ICANON and ECHO on terminal
             call read_termios
-            and dword [edi+c_lflag], ~(ICANON|ECHO)
+            and dword [ebp+c_lflag], ~(ICANON|ECHO)
             call write_termios
 
-            ; set esi as bf pointer, run program
-            lea esi, [edi+data]
+            lea ecx, [ebp+data] ; set ecx as bf pointer
+            ;call next
+            ;next: pop eax
+            ;lea edi, [eax+write_char-$]
+            ;call [edi]
+
+
+
+            mov esi, read_char  ; enable indirect calls (shorter opcode)
+            mov edi, write_char
+
             call run
 
             ; reset terminal ICANON and ECHO
-            or dword [edi+c_lflag], ICANON|ECHO
+            or dword [ebp+c_lflag], ICANON|ECHO
             call write_termios
 
             ; goodbye
@@ -71,7 +80,7 @@ BITS 32
             mov eax, 36h
             mov ebx, stdin
             mov ecx, 5401h
-            mov edx, edi
+            mov edx, ebp
             int 80h
             ret
 
@@ -79,26 +88,30 @@ BITS 32
             mov eax, 36h
             mov ebx, stdin
             mov ecx, 5402h
-            mov edx, edi
+            mov edx, ebp
             int 80h
             ret
 
         read_char:
             mov eax, 3     ; sys_read
-            mov edx, 1     ; length
-            mov ecx, esi   ; buffer
             mov ebx, stdin
+            ; ecx = buffer is already set
+            mov edx, 1     ; length
             int 80h
             ret
 
         write_char:
             mov eax, 4      ; sys_write
-            mov edx, 1
-            mov ecx, esi
             mov ebx, stdout
+            ; ecx = buffer is already set
+            mov edx, 1
             int 80h
             ret
 
     run:
+mov byte[ecx],65
+;call [edi]
+call write_char
+ret
 
     filesize    equ     $ - $$
