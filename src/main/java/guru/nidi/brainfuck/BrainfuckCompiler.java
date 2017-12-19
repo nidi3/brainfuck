@@ -15,16 +15,19 @@
  */
 package guru.nidi.brainfuck;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.RandomAccessFile;
 import java.util.Stack;
 
 import static guru.nidi.brainfuck.BaseDependent.*;
 import static guru.nidi.brainfuck.Opcodes.*;
 
-public class Brainfuck {
+public class BrainfuckCompiler {
     private final RandomAccessFile out;
 
-    private Brainfuck(RandomAccessFile out) {
+    private BrainfuckCompiler(RandomAccessFile out) {
         this.out = out;
     }
 
@@ -35,12 +38,12 @@ public class Brainfuck {
     public static void compile(String source, File output) throws IOException {
         output.delete();
         try (RandomAccessFile out = new RandomAccessFile(output, "rw")) {
-            new Brainfuck(out).compile(source);
+            new BrainfuckCompiler(out).compile(source);
         } catch (Exception e) {
             output.delete();
             throw e;
         }
-        output.setExecutable(true,false);
+        output.setExecutable(true, false);
     }
 
     private void compile(String source) throws IOException {
