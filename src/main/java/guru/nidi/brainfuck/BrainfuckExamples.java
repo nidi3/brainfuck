@@ -35,8 +35,12 @@ public class BrainfuckExamples {
         }
     }
 
-    public static void writeToFile(String name, File directory) throws IOException {
+    public static boolean writeToFile(String name, File directory) throws IOException {
         final File file = new File(directory, name);
+        if (file.exists()) {
+            return false;
+        }
         Files.copy(loader.getResourceAsStream("examples/" + name), file.toPath());
+        return true;
     }
 }
