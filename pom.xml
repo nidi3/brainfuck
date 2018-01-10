@@ -10,7 +10,7 @@
     </parent>
 
     <artifactId>brainfuck</artifactId>
-    <version>0.0.4-SNAPSHOT</version>
+    <version>0.0.4</version>
 
     <name>${project.artifactId}</name>
     <description>Brainfuck compiler</description>
@@ -28,7 +28,7 @@
         <connection>scm:git:https://github.com/nidi3/brainfuck</connection>
         <developerConnection>scm:git:https://github.com/nidi3/brainfuck</developerConnection>
         <url>https://github.com/nidi3/brainfuck</url>
-        <tag>HEAD</tag>
+        <tag>brainfuck-0.0.4</tag>
     </scm>
 
     <build>
