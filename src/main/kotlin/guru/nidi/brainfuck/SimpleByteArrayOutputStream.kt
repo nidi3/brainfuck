@@ -13,13 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package guru.nidi.brainfuck;
+package guru.nidi.brainfuck
 
-// these have to be adjusted whenever base.asm changes
-class BaseDependent {
-    static final int
-            LEN_POS1 = 0x44,
-            LEN_POS2 = 0x48,
-            READ_POS = 0xc3,
-            WRITE_POS = 0xd7;
+import java.io.OutputStream
+
+internal class SimpleByteArrayOutputStream(private val data: ByteArray) : OutputStream() {
+    internal var index = 0
+
+    fun at(index: Int): SimpleByteArrayOutputStream {
+        this.index = index
+        return this
+    }
+
+    override fun write(b: Int) {
+        data[index++] = b.toByte()
+    }
 }

@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
         <groupId>guru.nidi</groupId>
         <artifactId>guru-nidi-parent-pom</artifactId>
-        <version>1.1.6</version>
+        <version>1.1.24</version>
         <relativePath />
     </parent>
 
@@ -18,7 +19,7 @@
     <inceptionYear>2017</inceptionYear>
 
     <properties>
-        <java.version>1.8</java.version>
+        <kotlin.version>1.3.30</kotlin.version>
         <nasm>tomasbasham/nasm</nasm>
         <asm.source>src/main/resources/base.asm</asm.source>
         <asm.target>target/classes/base.out</asm.target>
@@ -32,6 +33,8 @@
     </scm>
 
     <build>
+        <sourceDirectory>src/main/kotlin</sourceDirectory>
+
         <plugins>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
@@ -46,13 +49,51 @@
                         <configuration>
                             <executable>docker</executable>
                             <commandlineArgs>
-                                run -v ${basedir}:/usr/src/app ${nasm} -f bin -o ${asm.target} ${asm.source}
+                                run -v ${basedir}:/usr/src/app ${nasm} -Ox -f bin -o ${asm.target} ${asm.source}
                             </commandlineArgs>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <artifactId>kotlin-maven-plugin</artifactId>
+                <configuration>
+                    <jvmTarget>1.8</jvmTarget>
+                </configuration>
+                <groupId>org.jetbrains.kotlin</groupId>
+                <version>${kotlin.version}</version>
+                <executions>
+                    <execution>
+                        <id>compile</id>
+                        <phase>process-sources</phase>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>test-compile</id>
+                        <phase>test-compile</phase>
+                        <goals>
+                            <goal>test-compile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-stdlib-jre8</artifactId>
+            <version>${kotlin.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-test</artifactId>
+            <version>${kotlin.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 
 </project>

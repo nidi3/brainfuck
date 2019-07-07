@@ -28,7 +28,6 @@ BITS 32
                 dd      filesize                        ;   p_memsz
                 dd      5                               ;   p_flags
                 dd      1000h                           ;   p_align
-
     phdrsize    equ     $ - phdr
 
     stdin       equ     0
@@ -38,6 +37,9 @@ BITS 32
     data        equ     36
     c_lflag     equ     12
 
+    wc          dd      write_char
+    rc          dd      read_char
+
     _start:
             ; reserve memory
             mov eax, 192    ; mmap2
@@ -45,49 +47,37 @@ BITS 32
             mov ecx, 30000  ; len
             mov edx, 6h     ; prot = PROT_READ|PROT_WRITE
             mov esi, 22h    ; flags = MAP_PRIVATE|MAP_ANONYMOUS
-            mov edi, 0      ; fd
+            xor edi, edi    ; fd
             xor ebp, ebp    ; offset
             int 80h
             mov ebp, eax    ; ebp = ptr to memory
 
             ; disable ICANON and ECHO on terminal
-            call read_termios
+            mov ecx, 5401h  ; read termios
+            call termios
             and dword [ebp+c_lflag], ~(ICANON|ECHO)
-            call write_termios
+            inc ecx         ; write termios
+            call termios
 
             lea ecx, [ebp+data] ; set ecx as bf pointer
-            ;call next
-            ;next: pop eax
-            ;lea edi, [eax+write_char-$]
-            ;call [edi]
-
-
-
-            mov esi, read_char  ; enable indirect calls (shorter opcode)
-            mov edi, write_char
+            mov esi, rc     ; enable indirect calls (shorter opcode)
+            mov edi, wc
+            mov edx, 1      ; length for read/write calls
 
             call run
 
             ; reset terminal ICANON and ECHO
             or dword [ebp+c_lflag], ICANON|ECHO
-            call write_termios
+            mov ecx, 5402h  ; write termios
+            call termios
 
             ; goodbye
-            mov eax,1       ; exit
+            mov eax, 1      ; exit
             int 80h
 
-        read_termios:
+        termios:
             mov eax, 36h
             mov ebx, stdin
-            mov ecx, 5401h
-            mov edx, ebp
-            int 80h
-            ret
-
-        write_termios:
-            mov eax, 36h
-            mov ebx, stdin
-            mov ecx, 5402h
             mov edx, ebp
             int 80h
             ret
@@ -96,7 +86,6 @@ BITS 32
             mov eax, 3     ; sys_read
             mov ebx, stdin
             ; ecx = buffer is already set
-            mov edx, 1     ; length
             int 80h
             ret
 
@@ -104,14 +93,9 @@ BITS 32
             mov eax, 4      ; sys_write
             mov ebx, stdout
             ; ecx = buffer is already set
-            mov edx, 1
             int 80h
             ret
 
     run:
-mov byte[ecx],65
-;call [edi]
-call write_char
-ret
 
     filesize    equ     $ - $$
