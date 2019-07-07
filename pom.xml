@@ -19,7 +19,7 @@
     <inceptionYear>2017</inceptionYear>
 
     <properties>
-        <kotlin.version>1.3.30</kotlin.version>
+        <kotlin.version>1.3.41</kotlin.version>
         <nasm>tomasbasham/nasm</nasm>
         <asm.source>src/main/resources/base.asm</asm.source>
         <asm.target>target/classes/base.out</asm.target>
